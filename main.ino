@@ -82,6 +82,8 @@ void setup() {
     MyESPNow::addPeer(targetMacAddress, 1, false);
 
     Serial.println("ESP-NOW Ready");
+    Serial.print("Device MAC Address: ");
+    Serial.println(WiFi.macAddress());
 }
 
 void loop() {

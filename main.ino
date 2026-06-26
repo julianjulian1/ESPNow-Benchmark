@@ -8,13 +8,12 @@
 // #define line below and set the MAC address accordingly.
 // Otherwise, it defaults to the Broadcast address.
 
-// #define USE_SPECIFIC_MAC {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF}
-
-#ifdef USE_SPECIFIC_MAC
-uint8_t targetMacAddress[] = USE_SPECIFIC_MAC;
-#else
-uint8_t targetMacAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; // Broadcast MAC
-#endif
+// Define multiple target MAC addresses
+uint8_t targetMacAddresses[][6] = {
+    {0xA4, 0xF0, 0x0F, 0x60, 0x1D, 0x10},
+    {0xA8, 0x46, 0x74, 0x46, 0x06, 0x44}
+};
+const int numTargets = sizeof(targetMacAddresses) / sizeof(targetMacAddresses[0]);
 
 // Set to true to enable Long Range (LR) mode, or false for standard mode.
 #define USE_LR_MODE true
@@ -78,8 +77,10 @@ void setup() {
     MyESPNow::setSendCallback(onDataSent);
     MyESPNow::setRecvCallback(onDataRecv);
 
-    // Add peer to send to
-    MyESPNow::addPeer(targetMacAddress, 1, false);
+    // Add peers to send to
+    for (int i = 0; i < numTargets; i++) {
+        MyESPNow::addPeer(targetMacAddresses[i], 1, false);
+    }
 
     Serial.println("ESP-NOW Ready");
     Serial.print("Device MAC Address: ");
@@ -100,7 +101,9 @@ void loop() {
         // Record time right before sending
         packetSendMicros = micros();
 
-        // Send to target (Broadcast or specific MAC)
-        MyESPNow::send(targetMacAddress, (const uint8_t *)msg, strlen(msg));
+        // Send to targets
+        for (int i = 0; i < numTargets; i++) {
+            MyESPNow::send(targetMacAddresses[i], (const uint8_t *)msg, strlen(msg));
+        }
     }
 }
